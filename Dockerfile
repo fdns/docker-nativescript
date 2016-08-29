@@ -12,18 +12,19 @@ RUN apt-get update && apt-get install -y software-properties-common && \
 RUN dpkg --add-architecture i386 && apt-get update && apt-get install -y --force-yes expect git wget libc6-i386 lib32stdc++6 lib32gcc1 lib32ncurses5 lib32z1 python curl && \
     apt-get clean && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Install Android SDK
-RUN curl http://dl.google.com/android/android-sdk_r24.3.3-linux.tgz | tar xz -C /opt/
-
 # Setup environment
 ENV ANDROID_HOME /opt/android-sdk-linux
-ENV PATH ${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools
+ENV PATH ${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools:/opt/tools
 
 # Install sdk elements and verify instalation
-RUN echo y | android update sdk --all --no-ui --filter tools && \
-    echo y | android update sdk --all --no-ui --filter platform-tools && \
-    ( while [ 1 ]; do sleep 1; echo y; done ) | android update sdk --all --no-ui --filter build-tools-23.0.3,android-23,extra-android-m2repository,extra-android-support && \
-	which adb && which android
+RUN cd /opt && \
+    wget --output-document=android-sdk.tgz --quiet http://dl.google.com/android/android-sdk_r24.4.1-linux.tgz && \
+    tar xzf android-sdk.tgz && \
+    rm -f android-sdk.tgz && \
+    chown -R root. /opt && \
+    cp -r ${ANDROID_HOME}/tools /opt/tools && \
+    ( while [ 1 ]; do sleep 1; echo y; done ) | android update sdk --all --no-ui --filter platform-tools,tools,build-tools-23.0.3,android-23,extra-android-support,extra-android-m2repository,extra-google-m2repository && \
+    which adb && which android
 
 # Install Node.js
 RUN curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash - && apt-get install -y nodejs && apt-get clean && rm -fr /var/lib/apt/lists/* /tmp/* /var/tmp/*
