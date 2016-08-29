@@ -18,12 +18,10 @@ ENV PATH ${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools:/opt/tools
 
 # Install sdk elements and verify instalation
 RUN cd /opt && \
-    wget --output-document=android-sdk.tgz --quiet http://dl.google.com/android/android-sdk_r24.4.1-linux.tgz && \
-    tar xzf android-sdk.tgz && \
-    rm -f android-sdk.tgz && \
-    chown -R root. /opt && \
+    curl http://dl.google.com/android/android-sdk_r24.4.1-linux.tgz | tar xz -C /opt/ && \
     cp -r ${ANDROID_HOME}/tools /opt/tools && \
     ( while [ 1 ]; do sleep 1; echo y; done ) | android update sdk --all --no-ui --filter platform-tools,tools,build-tools-23.0.3,android-23,extra-android-support,extra-android-m2repository,extra-google-m2repository && \
+    rm -fr /opt/tools && \
     which adb && which android
 
 # Install Node.js
